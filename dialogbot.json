@@ -1,0 +1,171 @@
+{ "intents" :[
+ {
+  "tag": "mendeklarasikan_variabel",
+  "patterns": ["cara mendeklarasikan variabel di php?", "variabel php"],
+  "responses": ["Di php, variabel dapat dideklarasikan dengan $nama_variabel. Contoh: $nama = \"John\";"],
+  "context_set": ""
+  
+},
+{
+  "tag": "crud", 
+  "patterns": ["buatkan PHP crud dong", "script PHP crud", "crud PHP"],
+  "responses": ["Tentu akan kubuatkan, buat dahulu file config.php: <?php\n/**\n * using mysqli_connect for database connection\n */\n\n$databaseHost = 'localhost';\n$databaseName = 'crud_db';\n$databaseUsername = 'root';\n$databasePassword = '';\n\n$mysqli = mysqli_connect($databaseHost, $databaseUsername, $databasePassword, $databaseName);\n\n?> Lalu buat file index.php, masukan kode : <?php\n// Create database connection using config file\ninclude_once(\"config.php\");\n\n// Fetch all users data from database\n$result = mysqli_query($mysqli, \"SELECT * FROM users ORDER BY id DESC\");\n?>\n\n<html>\n<head>\n    <title>Homepage</title>\n</head>\n\n<body>\n<a href=\"add.php\">Add New User</a><br/><br/>\n\n    <table width='80%' border=1>\n\n    <tr>\n        <th>Name</th> <th>Mobile</th> <th>Email</th> <th>Update</th>\n    </tr>\n    <?php  \n    while($user_data = mysqli_fetch_array($result)) {         \n        echo \"<tr>\";\n        echo \"<td>\".$user_data['name'].\"</td>\";\n        echo \"<td>\".$user_data['mobile'].\"</td>\";\n        echo \"<td>\".$user_data['email'].\"</td>\";    \n        echo \"<td><a href='edit.php?id=$user_data[id]'>Edit</a> | <a href='delete.php?id=$user_data[id]'>Delete</a></td></tr>\";        \n    }\n    ?>\n    </table>\n</body>\n</html> Kemudian buat file add.php, dan masukan kode : <html>\n<head>\n\t<title>Add Users</title>\n</head>\n\n<body>\n\t<a href=\"index.php\">Go to Home</a>\n\t<br/><br/>\n\n\t<form action=\"add.php\" method=\"post\" name=\"form1\">\n\t\t<table width=\"25%\" border=\"0\">\n\t\t\t<tr> \n\t\t\t\t<td>Name</td>\n\t\t\t\t<td><input type=\"text\" name=\"name\"></td>\n\t\t\t</tr>\n\t\t\t<tr> \n\t\t\t\t<td>Email</td>\n\t\t\t\t<td><input type=\"text\" name=\"email\"></td>\n\t\t\t</tr>\n\t\t\t<tr> \n\t\t\t\t<td>Mobile</td>\n\t\t\t\t<td><input type=\"text\" name=\"mobile\"></td>\n\t\t\t</tr>\n\t\t\t<tr> \n\t\t\t\t<td></td>\n\t\t\t\t<td><input type=\"submit\" name=\"Submit\" value=\"Add\"></td>\n\t\t\t</tr>\n\t\t</table>\n\t</form>\n\t\n\t<?php\n\n\t// Check If form submitted, insert form data into users table.\n\tif(isset($_POST['Submit'])) {\n\t\t$name = $_POST['name'];\n\t\t$email = $_POST['email'];\n\t\t$mobile = $_POST['mobile'];\n\t\t\n\t\t// include database connection file\n\t\tinclude_once(\"config.php\");\n\t\t\t\t\n\t\t// Insert user data into table\n\t\t$result = mysqli_query($mysqli, \"INSERT INTO users(name,email,mobile) VALUES('$name','$email','$mobile')\");\n\t\t\n\t\t// Show message when user added\n\t\techo \"User added successfully. <a href='index.php'>View Users</a>\";\n\t}\n\t?>\n</body>\n</html> Buat halaman add.php, dengan kode berikut : <?php\n// include database connection file\ninclude_once(\"config.php\");\n\n// Check if form is submitted for user update, then redirect to homepage after update\nif(isset($_POST['update']))\n{\t\n\t$id = $_POST['id'];\n\t\n\t$name=$_POST['name'];\n\t$mobile=$_POST['mobile'];\n\t$email=$_POST['email'];\n\t\t\n\t// update user data\n\t$result = mysqli_query($mysqli, \"UPDATE users SET name='$name',email='$email',mobile='$mobile' WHERE id=$id\");\n\t\n\t// Redirect to homepage to display updated user in list\n\theader(\"Location: index.php\");\n}\n?>\n<?php\n// Display selected user data based on id\n// Getting id from url\n$id = $_GET['id'];\n \n// Fetech user data based on id\n$result = mysqli_query($mysqli, \"SELECT * FROM users WHERE id=$id\");\n \nwhile($user_data = mysqli_fetch_array($result))\n{\n\t$name = $user_data['name'];\n\t$email = $user_data['email'];\n\t$mobile = $user_data['mobile'];\n}\n?>\n<html>\n<head>\t\n\t<title>Edit User Data</title>\n</head>\n \n<body>\n\t<a href=\"index.php\">Home</a>\n\t<br/><br/>\n\t\n\t<form name=\"update_user\" method=\"post\" action=\"edit.php\">\n\t\t<table border=\"0\">\n\t\t\t<tr> \n\t\t\t\t<td>Name</td>\n\t\t\t\t<td><input type=\"text\" name=\"name\" value=<?php echo $name;?>></td>\n\t\t\t</tr>\n\t\t\t<tr> \n\t\t\t\t<td>Email</td>\n\t\t\t\t<td><input type=\"text\" name=\"email\" value=<?php echo $email;?>></td>\n\t\t\t</tr>\n\t\t\t<tr> \n\t\t\t\t<td>Mobile</td>\n\t\t\t\t<td><input type=\"text\" name=\"mobile\" value=<?php echo $mobile;?>></td>\n\t\t\t</tr>\n\t\t\t<tr>\n\t\t\t\t<td><input type=\"hidden\" name=\"id\" value=<?php echo $_GET['id'];?>></td>\n\t\t\t\t<td><input type=\"submit\" name=\"update\" value=\"Update\"></td>\n\t\t\t</tr>\n\t\t</table>\n\t</form>\n</body>\n</html> Dan terakhir buat file delete.php, dengan kode : <?php\n// include database connection file\ninclude_once(\"config.php\");\n\n// Get id from URL to delete that user\n$id = $_GET['id'];\n\n// Delete user row from table based on given id\n$result = mysqli_query($mysqli, \"DELETE FROM users WHERE id=$id\");\n\n// After delete redirect to Home, so that latest user list will be displayed.\nheader(\"Location:index.php\");\n?>"],
+  "context_set": ""
+},
+{
+  "tag": "get_dan_post",
+  "patterns":["Apa perbedaan antara method get dan post ?", "beda nya post dan get apa", "get dan post bedanya ?"],
+  "responses": ["GET mengirimkan data melalui URL, sedangkan POST menyembunyikan data dalam badan permintaan HTTP."],
+  "context_set": ""
+},
+{
+  "tag": "script_link",
+  "patterns":["Bagaimana cara membuat link ?", "buatkan link", "link pada html"],
+  "responses": ["Anda dapat menggunakan tag `<a>` untuk membuat tautan atau link di HTML. Contoh: `<a href=\"https:\/\/www.example.com\">Kunjungi situs ini<\/a>`"],
+  "context_set": ""
+},
+{
+  "tag": "komentar",
+  "patterns":[ "Bagaimana cara  menambahkan  komentar di html ?", "buatkan komentar html", "penulisan komentar htmll"],
+  "responses": ["Komentar di HTML dimulai dengan `<!--` dan diakhiri dengan `-->`. Contoh: `<!-- Ini adalah komentar -->`"],
+  "context_set": ""
+},
+{
+  "tag": "pengertian_html",
+  "patterns":[ "Apa itu HTML?", "apa sih html", "html adalah", "html pengertian"],
+  "responses":[ "HTML (Hypertext Markup Language) adalah bahasa markah standar untuk membuat dan merancang halaman web."],
+  "context_set": ""
+},
+{
+  "tag": "pengertian_php",
+  "patterns":[ " Apa itu php?", "php adalah", "apa sih php itu", "arti php", "pengertian php"],
+  "responses":[ "php adalah bahasa pemrograman skrip sisi server yang digunakan untuk pengembangan web."],
+  "context_set": ""
+},
+{
+  "tag": "example_php",
+  "patterns": ["buatkan script php sederhana", "Bagikan contoh kode PHP", "Tolong tunjukkan cara menulis script PHP", "Gimana cara menggunakan PHP untuk membuat halaman web"],
+  "responses": [
+    "Ini merupakan script PHP sederhana : <!DOCTYPE html>\n<html>\n<head>\n <title>Contoh Script php Sederhana</title>\n</head>\n<body>\n\n<?php\n    // Fungsi untuk mendapatkan waktu saat ini\n    $current_time = date(\"H:i:s\");\n\n    // Sapaan berdasarkan waktu\n    if ($current_time >= \"05:00:00\" && $current_time < \"12:00:00\") {\n        $greeting = \"Selamat pagi\";\n    } elseif ($current_time >= \"12:00:00\" && $current_time < \"18:00:00\") {\n        $greeting = \"Selamat siang\";\n    } else {\n        $greeting = \"Selamat malam\";\n    }\n\n    // Menampilkan sapaan\n    echo \"<h1>$greeting! Selamat datang di contoh script php sederhana.</h1>\";\n\n    // Contoh penggunaan variabel\n    $nama = \"Pengguna\";\n    echo \"<p>Selamat datang, $nama!</p>\";\n?>\n\n</body>\n</html>"
+  ],
+  "context_set": ""
+},
+{
+  "tag": "error",
+  "patterns": ["Apakah ada kesalahan sintaksis dalam kode ini: print('Hello, World!')", "benar tidak penulisan Hello, world!", "Tolong periksa penulisan Hello, world!"],
+  "responses": ["Tidak, tidak ada kesalahan sintaks"],
+  "context_set": ""
+},
+{
+  "tag": "script_datatable",
+  "patterns": ["Tolong berikan contoh skrip HTML untuk membuat datatable",  "Bagaimana cara menggunakan Datatables HTML", "datatable HTML", "datatble", "datatabel", "Apa yang perlu saya tambahkan ke HTML saya untuk menggunakan DataTables?"],
+  "responses": ["Inilah script datatable untuk html : <!DOCTYPE html>\n<html>\n<head>\n    <title>Script DataTables php</title>\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css\">\n    <script type=\"text/javascript\" charset=\"utf8\" src=\"https://code.jquery.com/jquery-3.5.1.js\"></script>\n    <script type=\"text/javascript\" charset=\"utf8\" src=\"https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js\"></script>\n</head>\n<body>\n\n<table id=\"example\" class=\"display\" style=\"width:100%\">\n    <thead>\n        <tr>\n            <th>ID</th>\n            <th>Nama</th>\n            <th>Email</th>\n            <th>Tanggal Registrasi</th>\n        </tr>\n    </thead>\n    <tbody>\n        <?php\n            // Isi tabel dengan data dari database atau sumber data lainnya\n            foreach ($data as $row) {\n                echo \"<tr>\";\n                echo \"<td>{$row['id']}</td>\";\n                echo \"<td>{$row['nama']}</td>\";\n                echo \"<td>{$row['email']}</td>\";\n                echo \"<td>{$row['tanggal_registrasi']}</td>\";\n                echo \"</tr>\";\n            }\n        ?>\n    </tbody>\n</table>\n\n<script>\n    // Inisialisasi DataTables\n    $(document).ready(function() {\n        $('#example').DataTable();\n    });\n</script>\n\n</body>\n</html>"],
+  "context_set": ""
+},
+{
+  "tag": "script_form",
+  "patterns": ["Saya butuh skrip PHP untuk membuat form","Bagaimana cara membuat form PHP sederhana", "script form", "Tolong berikan contoh penggunaan form di PHP"],
+  "responses": ["ini merupakan script kode form php :<!DOCTYPE html>\n<html>\n<head>\n    <title>Script Formulir php</title>\n</head>\n<body>\n\n<?php\nif ($_SERVER['REQUEST_METHOD'] === 'POST') {\n    // Proses formulir jika data dikirimkan\n    $nama = $_POST['nama'];\n    $email = $_POST['email'];\n    $pesan = $_POST['pesan'];\n\n    // Proses data formulir, misalnya menyimpan ke database\n    // ... (tambahkan logika pengolahan formulir di sini)\n\n    // Tampilkan pesan sukses\n    echo \"<p>Formulir berhasil terkirim!</p>\";\n} else {\n    // Tampilkan formulir jika tidak ada data yang dikirimkan\n    echo \"<form method='post' action='{$_SERVER['php_SELF']}'>\";\n    echo \"<label for='nama'>Nama:</label>\";\n    echo \"<input type='text' name='nama' required><br>\";\n    echo \"<label for='email'>Email:</label>\";\n    echo \"<input type='email' name='email' required><br>\";\n    echo \"<label for='pesan'>Pesan:</label>\";\n    echo \"<textarea name='pesan' required></textarea><br>\";\n    echo \"<input type='submit' value='Kirim'>\";\n    echo \"</form>\";\n}\n?>\n\n</body>\n</html>"],
+  "context_set": ""
+},
+{
+  "tag": "script_edit",
+  "patterns": ["buatkan script PHP edit", "script edit", "edit diPHP"],
+  "responses": [
+    "Ini merupakan script kode untuk edit : <?php\n// Buat koneksi ke database\n$koneksi = new mysqli(\"localhost\", \"username\", \"password\", \"nama_database\");\n\n// Periksa koneksi\nif ($koneksi->connect_error) {\n    die(\"Koneksi gagal: \" . $koneksi->connect_error);\n}\n\n// Fungsi untuk mendapatkan data dari database\nfunction getDataFromDatabase($id) {\n    global $koneksi;\n    $query = \"SELECT * FROM nama_tabel WHERE id = $id\";\n    $result = $koneksi->query($query);\n\n    if ($result->num_rows > 0) {\n        return $result->fetch_assoc();\n    } else {\n        return null;\n    }\n}\n\n// Proses edit data jika formulir dikirimkan\nif ($_SERVER['REQUEST_METHOD'] === 'POST') {\n    $id = $_POST['id'];\n    $nama = $_POST['nama'];\n    $email = $_POST['email'];\n    $pesan = $_POST['pesan'];\n\n    // Proses update data ke database, sesuaikan dengan struktur tabel Anda\n    $query = \"UPDATE nama_tabel SET nama = '$nama', email = '$email', pesan = '$pesan' WHERE id = $id\";\n    $koneksi->query($query);\n\n    // Tampilkan pesan sukses\n    echo \"<p>Data berhasil diupdate!</p>\";\n} else {\n    // Jika tidak ada data dikirimkan, tampilkan formulir untuk mengedit\n    $id = $_GET['id'];\n    $data = getDataFromDatabase($id);\n\n    if ($data) {\n        // Tampilkan formulir dengan data yang akan diedit\n        echo \"<form method='post' action='{$_SERVER['php_SELF']}'>\";\n        echo \"<input type='hidden' name='id' value='{$data['id']}'>\";\n        echo \"<label for='nama'>Nama:</label>\";\n        echo \"<input type='text' name='nama' value='{$data['nama']}' required><br>\";\n        echo \"<label for='email'>Email:</label>\";\n        echo \"<input type='email' name='email' value='{$data['email']}' required><br>\";\n        echo \"<label for='pesan'>Pesan:</label>\";\n        echo \"<textarea name='pesan' required>{$data['pesan']}</textarea><br>\";\n        echo \"<input type='submit' value='Update'>\";\n        echo \"</form>\";\n    } else {\n        // Tampilkan pesan kesalahan jika data tidak ditemukan\n        echo \"<p>Data tidak ditemukan.</p>\";\n    }\n}\n\n// Tutup koneksi\n$koneksi->close();\n?>"
+  ],
+  "context_set": ""
+},
+{
+  "tag": "script_delete",
+  "patterns": ["Buatkan script PHP untuk menghapus data", "Tolong berikan contoh kode delete PHP", "delete", "Bagaimana cara membuat fungsi delete pada PHP?", "Saya perlu skrip untuk menghapus entri dari database"],
+  "responses": [
+    "Tentu saja, Ini kode untuk delete :<?php\n// Buat koneksi ke database\n$koneksi = new mysqli(\"localhost\", \"username\", \"password\", \"nama_database\");\n\n// Periksa koneksi\nif ($koneksi->connect_error) {\n    die(\"Koneksi gagal: \" . $koneksi->connect_error);\n}\n\n// Fungsi untuk menghapus data dari database\nfunction deleteDataFromDatabase($id) {\n    global $koneksi;\n    $query = \"DELETE FROM nama_tabel WHERE id = $id\";\n    $koneksi->query($query);\n}\n\n// Proses penghapusan data jika formulir dikirimkan\nif ($_SERVER['REQUEST_METHOD'] === 'POST') {\n    $id = $_POST['id'];\n\n    // Panggil fungsi untuk menghapus data dari database\n    deleteDataFromDatabase($id);\n\n    // Tampilkan pesan sukses\n    echo \"<p>Data berhasil dihapus!</p>\";\n} else {\n    // Jika tidak ada data dikirimkan, tampilkan formulir untuk mengkonfirmasi penghapusan\n    $id = $_GET['id'];\n    $data = getDataFromDatabase($id);\n\n    if ($data) {\n        // Tampilkan formulir konfirmasi penghapusan\n        echo \"<p>Apakah Anda yakin ingin menghapus data ini?</p>\";\n        echo \"<form method='post' action='{$_SERVER['php_SELF']}'>\";\n        echo \"<input type='hidden' name='id' value='{$data['id']}'>\";\n        echo \"<input type='submit' value='Hapus'>\";\n        echo \"</form>\";\n    } else {\n        // Tampilkan pesan kesalahan jika data tidak ditemukan\n        echo \"<p>Data tidak ditemukan.</p>\";\n    }\n}\n\n// Tutup koneksi\n$koneksi->close();\n?>"
+  ],
+  "context_set": ""
+},
+{
+  "tag": "contoh_html",
+  "patterns": ["buatkan script html sederhana", "script html", "html sederhana"],
+  "responses": [
+    "Ini merupakan scrip html sederhana : <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Halaman HTML Sederhana</title>\n</head>\n<body>\n    <header>\n        <h1>Selamat Datang!</h1>\n        <p>Ini adalah halaman HTML sederhana.</p>\n    </header>\n    <section>\n        <h2>Contoh List</h2>\n        <ul>\n            <li>Item 1</li>\n            <li>Item 2</li>\n            <li>Item 3</li>\n        </ul>\n    </section>\n    <section>\n        <h2>Contoh Tabel</h2>\n        <table border=\"1\">\n            <tr>\n                <th>Nama</th>\n                <th>Usia</th>\n            </tr>\n            <tr>\n                <td>John Doe</td>\n                <td>25</td>\n            </tr>\n            <tr>\n                <td>Jane Doe</td>\n                <td>30</td>\n            </tr>\n        </table>\n    </section>\n    <footer>\n        <p>&copy; 2023 Halaman HTML Sederhana</p>\n    </footer>\n</body>\n</html>"
+  ],
+  "context_set": ""
+},
+{
+  "tag": "script_gambar",
+  "patterns": ["buatkan kode HTML dengan gambar", "Saya ingin tahu cara menampilkan gambar di HTML","kode HTML gambar", "buatkan gambar", "Buatkan kode dengan menyisipkan gambar", "Bagaimana cara menambahkan gambar ke halaman HTML?", "Tolong berikan contoh HTML dengan gambar"],
+  "responses": [
+    "Berikut merupakan scrip kode untuk memasukan gambar : <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Halaman HTML dengan Gambar</title>\n</head>\n<body>\n    <header>\n        <h1>Selamat Datang!</h1>\n        <p>Ini adalah halaman HTML dengan menyisipkan gambar.</p>\n    </header>\n    <section>\n        <h2>Gambar Kucing Lucu</h2>\n        <img src=\"gambar-kucing.jpg\" alt=\"Kucing Lucu\">\n    </section>\n    <footer>\n        <p>&copy; 2023 Halaman HTML dengan Gambar</p>\n    </footer>\n</body>\n</html>"
+  ],
+  "context_set": ""
+},
+{
+  "tag": "script_tabel",
+  "patterns": ["Buatkan script HTML untuk membuat tabel"," tabel", "Tolong berikan contoh kode tabel HTML", "Bagaimana cara membuat tabel dengan HTML?", "Saya butuh contoh tabel HTML untuk referensi"],
+  "responses": [
+    "Berikut merupakan script kode untuk tabel html : <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Halaman HTML dengan Tabel</title>\n    <style>\n        table {\n            border-collapse: collapse;\n            width: 100%;\n        }\n        th, td {\n            border: 1px solid #dddddd;\n            text-align: left;\n            padding: 8px;\n        }\n        th {\n            background-color: #f2f2f2;\n        }\n    </style>\n</head>\n<body>\n    <header>\n        <h1>Data Mahasiswa</h1>\n    </header>\n    <section>\n        <table>\n            <thead>\n                <tr>\n                    <th>Nama</th>\n                    <th>NIM</th>\n                    <th>Jurusan</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td>John Doe</td>\n                    <td>123456</td>\n                    <td>Teknik Informatika</td>\n                </tr>\n                <tr>\n                    <td>Jane Doe</td>\n                    <td>789012</td>\n                    <td>Sistem Informasi</td>\n                </tr>\n                <tr>\n                    <td>Bob Smith</td>\n                    <td>345678</td>\n                    <td>Teknik Elektro</td>\n                </tr>\n            </tbody>\n        </table>\n    </section>\n    <footer>\n        <p>&copy; 2023 Halaman HTML dengan Tabel</p>\n    </footer>\n</body>\n</html>"
+  ],
+  "context_set": ""
+},
+ {
+  "tag": "menyapa",
+  "patterns":[ "Hai","hello","hi","hy","bro","sis","kawan","hallo"],
+  "responses":[ "Halo! Bagaimana saya bisa membantu Anda? :)", "hi!", "Silahkan bertanya!", "Hai, ada yang saya bisa bantu ?"]
+},
+{
+  "tag": "sapaan_pagi",
+  "patterns":[ "pagi","morning", "selamat pagi", "pagi bot"],
+  "responses":[ "Selamat pagi! Ada yang perlu Anda tanyakan?", "Selamat pagi sayang!, ada yang bisa dibantu ?"],
+  "context_set": ""
+},
+{
+  "tag": "sapaan_siang",
+  "patterns":["siang","afternoon", "siang bot"],
+  "responses":[ "Selamat siang! Bagaimana saya bisa membantu Anda hari ini?"],
+  "context_set": ""
+},
+{
+  "tag": "sapaan_sore",
+  "patterns":["sore","afternoon", "sore bot"],
+  "responses":[ "Selamat sore! Ada yang bisa saya bantu?"],
+  "context_set": ""
+},
+{
+  "tag": "sapaan_malam",
+  "patterns":["malam","malem","good night", "malam bot"],
+  "responses":[ "Selamat malam! Bagaimana saya bisa membantu Anda?"],
+  "context_set": ""
+},
+ {
+  "tag": "pertanyaan_kabar",
+  "patterns":[ "Apa kabarmu ?","kabarmu", "bagaimana kabarmu", "sehat bot", "kondisi kamu gimana ?", "kbarmu"],
+  "responses":[ "Saya adalah model AI, jadi saya selalu siap membantu Anda!"],
+  "context_set": ""
+},
+{
+  "tag": "pertanyaan_nama",
+  "patterns":[ "Apa nama mu ?","Siapa Kamu", "kamu punya nama ?", "dengan siapa saya bicara", "siapakah kamu"],
+  "responses":[ "Saya adalah Asisstant Bot Elvanhaz"],
+  "context_set": ""
+},
+ {
+  "tag": "pertanyaan_nama",
+  "patterns":[ "sapa saya dengan nama ?", "tolong panggil nama saya", "nama saya"],
+  "responses":[ "Maaf, tetapi saya tidak memiliki kemampuan untuk mengetahui atau menyimpan informasi pribadi tentang pengguna. Saya dirancang untuk menghormati privasi dan tidak dapat menyimpan informasi pribadi"],
+  "context_set": ""
+},
+ {
+  "tag": "berakhir",
+  "patterns":["Terima Kasih", "thanks bro", "makasih bot", "good bye"],
+  "responses":[ "Sama-sama! Jika Anda memiliki pertanyaan lebih lanjut atau ada hal lain yang bisa saya bantu"],
+  "context_set": ""
+},
+ {
+  "tag": "bertanya",
+  "patterns": ["Mau nanya dong ?"],
+  "responses":[ "Tentu, saya di sini untuk membantu! Silakan beri tahu pertanyaan atau masalah yang ingin Anda diskusikan."],
+  "context_set": ""
+ }
+ ]
+}
